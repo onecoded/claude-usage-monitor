@@ -1,0 +1,6 @@
+config.json
+usage_monitor.log
+notify_state.json
+widget_refresh.tmp
+__pycache__/
+*.pyc

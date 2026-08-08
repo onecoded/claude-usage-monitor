@@ -1,0 +1,11 @@
+{
+  "divisor": 7,
+  "weekly_token_cap": 50000000,
+  "week_start_day": "saturday",
+  "toast_title": "Claude Budget Breach",
+  "toast_app_id": "ClaudeUsageMonitor",
+  "log_enabled": true,
+  "max_log_size_mb": 5,
+  "usage_source": "session_transcripts",
+  "claude_projects_dir": "~/.claude/projects"
+}
