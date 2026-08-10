@@ -2,9 +2,6 @@
 """
 DOES:   Always-on-top desktop widget showing Claude Code daily allowance %.
         Big number = daily % used (green/yellow/red). Small = weekly %.
-        On top of Claude Code app windows specifically.
-IN-OUT: Reads config.json + session transcripts. Refreshes on 10s timer
-        and instantly when Stop hook writes widget_refresh.tmp.
 RUN:    pythonw.exe claude_usage_widget.pyw  (no console window)
 """
 
@@ -14,14 +11,12 @@ import json
 import os
 import sys
 import glob
-import subprocess
-import ctypes
 
 SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_PATH = os.path.join(SCRIPT_DIR, "config.json")
 REFRESH_SIGNAL = os.path.join(SCRIPT_DIR, "widget_refresh.tmp")
 
-WEEK_MAP = {5: 1, 6: 2, 0: 3, 1: 4, 2: 5, 3: 6, 4: 7}
+WEEK_MAP = {4: 1, 5: 2, 6: 3, 0: 4, 1: 5, 2: 6, 3: 7}
 
 BG = "#1a1a2e"
 FG = "#c0c0c0"
@@ -34,11 +29,12 @@ DIM = "#555"
 def get_day_index():
     return WEEK_MAP[datetime.date.today().weekday()]
 
-
 def get_week_bounds():
+    """Return (friday, thursday) datetime objects for the current usage week."""
     today = datetime.date.today()
-    days_since_sat = (today.weekday() - 5) % 7
-    week_start = today - datetime.timedelta(days=days_since_sat)
+    # Friday is weekday 4; go back to the most recent Friday
+    days_since_friday = (today.weekday() - 4) % 7
+    week_start = today - datetime.timedelta(days=days_since_friday)
     week_end = week_start + datetime.timedelta(days=6)
     return week_start, week_end
 
@@ -91,31 +87,66 @@ def get_usage(config):
     total_tokens = total_in + total_out
     usage_pct = (total_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
     daily_pct = (usage_pct / threshold_pct * 100) if threshold_pct > 0 else 0
-    return total_tokens, usage_pct, threshold_pct, daily_pct
+
+    # Tokens consumed in the last hour
+    one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
+    hourly_in = 0
+    hourly_out = 0
+
+    for jsonl_path in glob.glob(os.path.join(projects_dir, "*", "*.jsonl")):
+        try:
+            if datetime.datetime.fromtimestamp(os.path.getmtime(jsonl_path)) < one_hour_ago:
+                continue
+            with open(jsonl_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        if entry.get("type") != "assistant":
+                            continue
+                        ts_str = entry.get("timestamp", "")
+                        if not ts_str:
+                            continue
+                        try:
+                            ts = datetime.datetime.fromisoformat(
+                                ts_str.replace("Z", "+00:00")
+                            ).replace(tzinfo=None)
+                            if ts < one_hour_ago:
+                                continue
+                        except Exception:
+                            continue
+                        usage = entry.get("message", {}).get("usage", {})
+                        if not usage:
+                            continue
+                        hourly_in += usage.get("input_tokens", 0)
+                        hourly_out += usage.get("output_tokens", 0)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        except Exception:
+            continue
+
+    hourly_tokens = hourly_in + hourly_out
+    hourly_pct = (hourly_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
+
+    return total_tokens, usage_pct, threshold_pct, daily_pct, hourly_pct
 
 
 class UsageWidget:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Claude Usage")
-        # Small borderless widget — width 160, height 80
-        self.root.geometry("160x82+25+25")
-        self.root.overrideredirect(True)
-        # Topmost but we'll manage focus to be "on top of Claude" not everything
+        self.root.geometry("170x105+25+25")
+        self.root.minsize(170, 105)
+        self.root.maxsize(170, 105)
         self.root.attributes("-topmost", True)
-        self.root.attributes("-alpha", 0.93)
         self.root.configure(bg=BG)
+        self.root.resizable(False, False)
 
-        # Drag handling
         self.drag_x = 0
         self.drag_y = 0
-        self.root.bind("<Button-1>", self.start_drag)
-        self.root.bind("<B1-Motion>", self.on_drag)
-        self.root.bind("<Button-3>", lambda e: self.root.destroy())  # right-click = close
 
-        # --- Layout: big daily % on top, small weekly below ---
+        # --- Layout ---
         self.daily_label = tk.Label(
-            self.root, text="...", font=("Consolas", 22, "bold"),
+            self.root, text="...", font=("Consolas", 24, "bold"),
             bg=BG, fg=GREEN
         )
         self.daily_label.pack(pady=(6, 0))
@@ -130,7 +161,21 @@ class UsageWidget:
             self.root, text="", font=("Segoe UI", 8),
             bg=BG, fg=FG
         )
-        self.weekly_label.pack(pady=(2, 4))
+        self.weekly_label.pack(pady=(1, 0))
+
+        self.burn_label = tk.Label(
+            self.root, text="", font=("Segoe UI", 7),
+            bg=BG, fg=DIM
+        )
+        self.burn_label.pack(pady=(0, 4))
+
+        # Bind drag + right-click to all widgets
+        all_widgets = [self.root, self.daily_label, self.daily_sub,
+                       self.weekly_label, self.burn_label]
+        for w in all_widgets:
+            w.bind("<Button-1>", self.start_drag)
+            w.bind("<B1-Motion>", self.on_drag)
+            w.bind("<Button-3>", lambda e: self.root.destroy())
 
         self.update_usage()
         self.check_refresh()
@@ -148,24 +193,22 @@ class UsageWidget:
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 config = json.load(f)
-            total_tokens, usage_pct, threshold_pct, daily_pct = get_usage(config)
+            total_tokens, usage_pct, threshold_pct, daily_pct, hourly_pct = get_usage(config)
             day_idx = get_day_index()
 
-            # Big number: daily allowance % used
             self.daily_label.config(text=f"{daily_pct:.0f}%")
 
-            if daily_pct >= 100:
+            if daily_pct >= 80:
                 color = RED
-            elif daily_pct >= 80:
+            elif daily_pct >= 60:
                 color = YELLOW
             else:
                 color = GREEN
             self.daily_label.config(fg=color)
 
             self.daily_sub.config(text=f"of Day {day_idx}/7 budget ({threshold_pct:.0f}%)")
-
-            # Small: weekly %
             self.weekly_label.config(text=f"Weekly: {usage_pct:.1f}%")
+            self.burn_label.config(text=f"Last hr: {hourly_pct:.1f}%/hr")
 
         except Exception as e:
             self.daily_label.config(text="Err")

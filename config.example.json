@@ -1,7 +1,7 @@
 {
   "divisor": 7,
   "weekly_token_cap": 50000000,
-  "week_start_day": "saturday",
+  "week_start_day": "friday",
   "toast_title": "Claude Budget Breach",
   "toast_app_id": "ClaudeUsageMonitor",
   "log_enabled": true,

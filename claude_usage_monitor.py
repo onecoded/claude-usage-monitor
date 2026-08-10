@@ -23,16 +23,16 @@ CONFIG_PATH = os.path.join(SCRIPT_DIR, "config.json")
 LOG_PATH = os.path.join(SCRIPT_DIR, "usage_monitor.log")
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "claude_usage_monitor.py")
 
-# --- Day-of-week mapping: Saturday=1 .. Friday=7 ---
+# --- Day-of-week mapping: Friday=1 .. Thursday=7 ---
 # datetime: Monday=0, Tuesday=1, Wednesday=2, Thursday=3, Friday=4, Saturday=5, Sunday=6
 WEEK_MAP = {
-    5: 1,  # Saturday  = Day 1
-    6: 2,  # Sunday    = Day 2
-    0: 3,  # Monday    = Day 3
-    1: 4,  # Tuesday   = Day 4
-    2: 5,  # Wednesday = Day 5
-    3: 6,  # Thursday  = Day 6
-    4: 7,  # Friday    = Day 7
+    4: 1,  # Friday    = Day 1
+    5: 2,  # Saturday  = Day 2
+    6: 3,  # Sunday    = Day 3
+    0: 4,  # Monday    = Day 4
+    1: 5,  # Tuesday   = Day 5
+    2: 6,  # Wednesday = Day 6
+    3: 7,  # Thursday  = Day 7
 }
 
 # Pythonw path for firing non-blocking toast subprocesses
@@ -58,10 +58,11 @@ def get_day_index():
 
 
 def get_week_bounds():
-    """Return (saturday, friday) datetime objects for the current usage week."""
+    """Return (friday, thursday) datetime objects for the current usage week."""
     today = datetime.date.today()
-    days_since_saturday = (today.weekday() - 5) % 7
-    week_start = today - datetime.timedelta(days=days_since_saturday)
+    # Friday is weekday 4; go back to the most recent Friday
+    days_since_friday = (today.weekday() - 4) % 7
+    week_start = today - datetime.timedelta(days=days_since_friday)
     week_end = week_start + datetime.timedelta(days=6)
     return week_start, week_end
 
@@ -136,6 +137,142 @@ def get_usage_percent(config):
     return total_tokens, pct
 
 
+def get_hourly_pct(config):
+    """Return % of weekly cap consumed in the last hour."""
+    projects_dir = config.get("claude_projects_dir", os.path.expanduser("~/.claude/projects"))
+    weekly_cap = config.get("weekly_token_cap", 50000000)
+    one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
+
+    total_tokens = 0
+    for jsonl_path in glob.glob(os.path.join(projects_dir, "*", "*.jsonl")):
+        try:
+            if datetime.datetime.fromtimestamp(os.path.getmtime(jsonl_path)) < one_hour_ago:
+                continue
+            with open(jsonl_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        if entry.get("type") != "assistant":
+                            continue
+                        ts_str = entry.get("timestamp", "")
+                        if not ts_str:
+                            continue
+                        ts = datetime.datetime.fromisoformat(
+                            ts_str.replace("Z", "+00:00")
+                        ).replace(tzinfo=None)
+                        if ts < one_hour_ago:
+                            continue
+                        usage = entry.get("message", {}).get("usage", {})
+                        if not usage:
+                            continue
+                        total_tokens += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        except Exception:
+            continue
+
+    return (total_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
+
+
+def get_today_tokens(config):
+    """Return tokens consumed today only (since midnight)."""
+    projects_dir = config.get("claude_projects_dir", os.path.expanduser("~/.claude/projects"))
+    now_local = datetime.datetime.now()
+    midnight = datetime.datetime(now_local.year, now_local.month, now_local.day)
+    # Convert to UTC for comparison (HST = UTC-10)
+    midnight_utc = midnight + datetime.timedelta(hours=10)
+
+    total_tokens = 0
+    for jsonl_path in glob.glob(os.path.join(projects_dir, "*", "*.jsonl")):
+        try:
+            if datetime.datetime.fromtimestamp(os.path.getmtime(jsonl_path)) < midnight:
+                continue
+            with open(jsonl_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        if entry.get("type") != "assistant":
+                            continue
+                        ts_str = entry.get("timestamp", "")
+                        if not ts_str:
+                            continue
+                        ts = datetime.datetime.fromisoformat(
+                            ts_str.replace("Z", "+00:00")
+                        ).replace(tzinfo=None)
+                        if ts < midnight_utc:
+                            continue
+                        usage = entry.get("message", {}).get("usage", {})
+                        if not usage:
+                            continue
+                        total_tokens += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        except Exception:
+            continue
+
+    return total_tokens
+
+
+def get_5h_window(config):
+    """Return (tokens_5h, prompts_5h, minutes_to_reset) for Claude Code's 5-hour rate limit."""
+    projects_dir = config.get("claude_projects_dir", os.path.expanduser("~/.claude/projects"))
+    # Timestamps in JSONL are UTC; local time is HST (UTC-10)
+    # Convert local now to UTC for comparison
+    now_local = datetime.datetime.now()
+    now_utc = now_local + datetime.timedelta(hours=10)
+    five_hours_ago_utc = now_utc - datetime.timedelta(hours=5)
+
+    total_tokens = 0
+    prompt_count = 0
+    prompt_timestamps = []
+
+    for jsonl_path in glob.glob(os.path.join(projects_dir, "*", "*.jsonl")):
+        try:
+            if datetime.datetime.fromtimestamp(os.path.getmtime(jsonl_path)) < (now_local - datetime.timedelta(hours=6)):
+                continue
+            with open(jsonl_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        ts_str = entry.get("timestamp", "")
+                        if not ts_str:
+                            continue
+                        ts = datetime.datetime.fromisoformat(
+                            ts_str.replace("Z", "+00:00")
+                        ).replace(tzinfo=None)
+                        if ts < five_hours_ago_utc:
+                            continue
+
+                        if entry.get("type") == "user" and entry.get("message", {}).get("role") == "user":
+                            prompt_count += 1
+                            prompt_timestamps.append(ts)
+
+                        if entry.get("type") == "assistant":
+                            usage = entry.get("message", {}).get("usage", {})
+                            if usage:
+                                total_tokens += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        except Exception:
+            continue
+
+    if prompt_timestamps:
+        sorted_timestamps = sorted(prompt_timestamps)
+        # Find the most recent gap > 5 min between prompts — that's likely when
+        # the rate limit reset and a new window started
+        window_start = sorted_timestamps[0]
+        for i in range(1, len(sorted_timestamps)):
+            gap = (sorted_timestamps[i] - sorted_timestamps[i-1]).total_seconds()
+            if gap > 300:  # > 5 min gap
+                window_start = sorted_timestamps[i]
+        reset_utc = window_start + datetime.timedelta(hours=5)
+        minutes_to_reset = max(0, (reset_utc - now_utc).total_seconds() / 60)
+    else:
+        minutes_to_reset = 0
+
+    return total_tokens, prompt_count, minutes_to_reset
+
+
 def fire_toast(title, body, scenario="urgent"):
     """
     Fire a persistent Windows Toast notification using win11toast.
@@ -180,7 +317,7 @@ def fire_toast_detached(title, body, scenario="urgent"):
         return fire_toast(title, body, scenario)
 
 
-def should_notify(tier, usage_pct, threshold_pct, config):
+def should_notify(tier, daily_pct, config):
     """
     Determine if we should notify for this tier.
 
@@ -188,8 +325,9 @@ def should_notify(tier, usage_pct, threshold_pct, config):
     the same day. State resets each day.
 
     Tiers:
-      'warning' — fires when usage crosses 10% of the day's threshold
-      'breach'  — fires when usage crosses the day's threshold
+      'yellow' — fires when daily allowance hits 60%
+      'red'    — fires when daily allowance hits 80%
+      'breach' — fires when daily allowance hits 100%
     """
     state_path = os.path.join(SCRIPT_DIR, "notify_state.json")
     today_str = datetime.date.today().isoformat()
@@ -209,15 +347,20 @@ def should_notify(tier, usage_pct, threshold_pct, config):
     if tier in notified:
         return False
 
-    if tier == "warning":
-        warning_level = threshold_pct * 0.10  # 10% of the threshold
-        if usage_pct >= warning_level:
-            notified.append("warning")
+    if tier == "yellow":
+        if daily_pct >= 60:
+            notified.append("yellow")
+            state["notified"] = notified
+            _save_state(state_path, state)
+            return True
+    elif tier == "red":
+        if daily_pct >= 80:
+            notified.append("red")
             state["notified"] = notified
             _save_state(state_path, state)
             return True
     elif tier == "breach":
-        if usage_pct >= threshold_pct:
+        if daily_pct >= 100:
             notified.append("breach")
             state["notified"] = notified
             _save_state(state_path, state)
@@ -292,9 +435,10 @@ def main():
 
     # --- Normal run ---
     total_tokens, usage_pct = get_usage_percent(config)
+    daily_pct = (usage_pct / threshold_pct * 100) if threshold_pct > 0 else 0
 
-    log(f"Day {day_idx}/7, threshold={threshold_pct:.2f}%, warning={warning_pct:.2f}%, "
-        f"usage={usage_pct:.2f}% ({total_tokens:,} tokens)")
+    log(f"Day {day_idx}/7, threshold={threshold_pct:.2f}%, usage={usage_pct:.2f}% "
+        f"({total_tokens:,} tokens), daily={daily_pct:.0f}%")
 
     # Write refresh signal for the desktop widget (if running)
     try:
@@ -303,31 +447,85 @@ def main():
     except Exception:
         pass
 
-    # Check tiers: warning first, then breach
-    # Only fire one per run (breach takes priority if both crossed)
+    # Write usage.json for the web dashboard
+    try:
+        weekly_cap = config.get("weekly_token_cap", 50000000)
+        hourly_pct = get_hourly_pct(config)
+        hourly_tokens = int(weekly_cap * hourly_pct / 100)
+        tokens_5h, prompts_5h, minutes_to_reset = get_5h_window(config)
+        today_tokens = get_today_tokens(config)
+        today_pct = (today_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
+        threshold_tokens = int(weekly_cap * threshold_pct / 100)
+        remaining_today_tokens = max(0, int(threshold_tokens - total_tokens))
+        remaining_today_pct = max(0, 100 - daily_pct)
+
+        # Time to limit: if burning at hourly_pct, how many hours until daily 100%
+        if hourly_pct > 0 and daily_pct < 100:
+            pct_to_burn = 100 - daily_pct
+            # hourly_pct is % of weekly cap per hour; daily_pct is % of threshold
+            # Convert: hours = (pct_to_burn * threshold_pct) / (hourly_pct * 100)
+            hours_to_limit = (pct_to_burn * threshold_pct) / (hourly_pct * 100) if hourly_pct > 0 else 0
+        else:
+            hours_to_limit = 0
+
+        usage_data = {
+            "daily_pct": daily_pct,
+            "usage_pct": usage_pct,
+            "threshold_pct": threshold_pct,
+            "day_index": day_idx,
+            "hourly_pct": hourly_pct,
+            "hourly_tokens": hourly_tokens,
+            "tokens_5h": tokens_5h,
+            "prompts_5h": prompts_5h,
+            "minutes_to_reset": minutes_to_reset,
+            "today_tokens": today_tokens,
+            "today_pct": today_pct,
+            "total_tokens": total_tokens,
+            "weekly_cap": weekly_cap,
+            "remaining_today_tokens": remaining_today_tokens,
+            "remaining_today_pct": remaining_today_pct,
+            "hours_to_limit": hours_to_limit,
+            "weekly_remaining_tokens": max(0, int(weekly_cap - total_tokens)),
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        with open(os.path.join(SCRIPT_DIR, "scripts", "usage.json"), "w") as f:
+            json.dump(usage_data, f)
+    except Exception:
+        pass
+
+    # Check tiers: breach > red > yellow (only fire one per run, highest priority)
     fired = False
 
-    if should_notify("breach", usage_pct, threshold_pct, config):
+    if should_notify("breach", daily_pct, config):
         msg = (
-            f"You've used {usage_pct:.1f}% of your weekly allowance — "
-            f"that's over today's budget of {threshold_pct:.1f}% (Day {day_idx}/7). "
-            f"Slow down to keep access all week."
+            f"You've used {daily_pct:.0f}% of today's allowance — "
+            f"over the daily budget (Day {day_idx}/7). "
+            f"Weekly usage: {usage_pct:.1f}%. Stop to keep access all week."
         )
-        log(f"BREACH — firing persistent toast: {msg}")
+        log(f"BREACH — firing toast: {msg}")
         fire_toast_detached("Claude Budget Breach", msg, "urgent")
         fired = True
-    elif should_notify("warning", usage_pct, threshold_pct, config):
+    elif should_notify("red", daily_pct, config):
         msg = (
-            f"You've used {usage_pct:.1f}% of your weekly allowance. "
-            f"Today's budget is {threshold_pct:.1f}% (Day {day_idx}/7) — "
-            f"you're approaching the limit."
+            f"You've used {daily_pct:.0f}% of today's allowance "
+            f"(Day {day_idx}/7). Weekly: {usage_pct:.1f}%. "
+            f"20% left for today — almost at the limit."
         )
-        log(f"WARNING — firing persistent toast: {msg}")
-        fire_toast_detached("Claude Budget Warning", msg, "urgent")
+        log(f"RED — firing toast: {msg}")
+        fire_toast_detached("Claude Budget — 80% Used", msg, "urgent")
+        fired = True
+    elif should_notify("yellow", daily_pct, config):
+        msg = (
+            f"You've used {daily_pct:.0f}% of today's allowance "
+            f"(Day {day_idx}/7). Weekly: {usage_pct:.1f}%. "
+            f"Heads up — 40% left for today."
+        )
+        log(f"YELLOW — firing toast: {msg}")
+        fire_toast_detached("Claude Budget — 60% Used", msg, "urgent")
         fired = True
 
     if not fired:
-        log(f"OK — usage {usage_pct:.1f}% within bounds (warning={warning_pct:.1f}%, threshold={threshold_pct:.1f}%)")
+        log(f"OK — daily {daily_pct:.0f}% (yellow=60%, red=80%, breach=100%)")
 
 
 if __name__ == "__main__":
