@@ -1,245 +1,353 @@
 [
   {
-    "id": "prom0",
-    "name": "prom0",
+    "id": "master.debug",
+    "name": "master.debug",
     "title": "Iterative Deep Debugging",
-    "desc": "Forces STATE, PROOF, NEXT format. Finish top priority, prove it, list what is left, highest reco, one question.",
-    "tier": "core",
+    "desc": "STATE, PROOF, NEXT format. Prove every claim before moving on.",
+    "tier": "master",
     "model": "all",
-    "body": "FINISH the top priorities and stay on top of them. Verified output always not assumptions. WHAT IS LEFT - ordered most to least critical. WHAT ARE YOU WAITING ON ME FOR. HIGHEST RECO. THEN ONE QUESTION - explain the trade-off before you ask."
+    "body": "FINISH the top priorities and stay on top of them. Verified output always not assumptions. WHAT IS LEFT - ordered most to least critical. WHAT ARE YOU WAITING ON ME FOR. HIGHEST RECO. THEN ONE QUESTION. Never claim it works until you have watched it work."
   },
   {
-    "id": "prom",
-    "name": "prom",
-    "title": "Build and Show Results",
-    "desc": "Do it, show proven results, create a looping plan to finish all remaining tasks.",
-    "tier": "core",
+    "id": "master.doit",
+    "name": "master.doit",
+    "title": "Build & Show Results",
+    "desc": "Do it, proven results, looping plan to finish all remaining.",
+    "tier": "master",
     "model": "all",
-    "body": "do it thanks show me proven results oriented incremental progress. explain in simple details so its clear then interview me so we can create a plan. propose it to me and ask for approval then tell me what do you recomend and why? - create a looping plan to finish all remaining tasks in your queue."
+    "body": "do it thanks show me proven results oriented incremental progress. explain in simple details so its clear then interview me so we can create a plan. propose it to me and ask for approval then tell me what do you recommend and why? - create a looping plan to finish all remaining tasks in your queue."
   },
   {
-    "id": "prom1",
-    "name": "prom1",
+    "id": "master.rule",
+    "name": "master.rule",
     "title": "Record This Ruling Now",
-    "desc": "Stop everything. Record a new ruling to the vault before this chat loses it.",
-    "tier": "core",
+    "desc": "Stop. Write a new ruling to the vault before it's lost.",
+    "tier": "master",
     "model": "all",
-    "body": "RECORD THIS RULING NOW. Stop whatever else you were doing. Quote my ruling back to me VERBATIM. Resolve where it goes in vault_map.json. Write it with date and context. Archive before overwrite. Re-route the map. Tell me in three lines: ruling, full path, which units inherit it."
+    "body": "RECORD THIS RULING NOW. Quote it VERBATIM. Resolve path in vault_map.json. Write with date and context. Archive before overwrite. Re-route the map. Tell me in 3 lines: ruling, full path, which units inherit it."
   },
   {
-    "id": "prom3",
-    "name": "prom3",
-    "title": "Master Ingestion (S0)",
-    "desc": "Read handoff, verify disk state, interview if ambiguous, generate state summary.",
-    "tier": "core",
+    "id": "master.ingest",
+    "name": "master.ingest",
+    "title": "S0: Ingestion & Interview",
+    "desc": "Read handoff. Verify disk state. Interview if ambiguous.",
+    "tier": "master",
     "model": "all",
-    "body": "Master Ingestion Engine S0_INGEST. Read READ FIRST paths. Parse SESSION HANDOFF block. Verify disk state. If ANY field ambiguous, INTERVIEW user ONE question at a time. Generate 6-line state summary. Output self-prompt for S1 and model-specific prompts. Do NOT build. STOP."
+    "body": "Master Ingestion Engine S0_INGEST. Read READ FIRST paths. Parse SESSION HANDOFF. Verify disk state. If ANY field ambiguous, INTERVIEW user ONE question at a time. Generate 6-line state summary. Output self-prompt for S1 and model-specific prompts."
   },
   {
-    "id": "prom-s1",
-    "name": "S1",
-    "title": "Master Architect Genesis (S1)",
-    "desc": "Inspect TASK_BLOCK, interview one field at a time, read THE-TREE.md, decompose into WBS DAG.",
-    "tier": "core",
+    "id": "master.genesis",
+    "name": "master.genesis",
+    "title": "S1: Architect Genesis",
+    "desc": "TASK_BLOCK. Interview. THE-TREE. WBS DAG. Schemas.",
+    "tier": "master",
     "model": "all",
-    "body": "Master System Architect S1_GENESIS. Inspect TASK_BLOCK(WANT, TRIGGER, DONE WHEN, DO NOT, UNIT). INTERVIEW user ONE question at a time. Read THE-TREE.md. Decompose into WBS DAG nodes. Emit canonical contracts in src/schemas/. Generate model-specific injection prompts. Enforce budget <15k tokens. STOP."
+    "body": "Master System Architect S1_GENESIS. Inspect TASK_BLOCK. INTERVIEW one field at a time. Read THE-TREE.md. Decompose into WBS DAG nodes. Emit contracts in src/schemas/. Generate model-specific prompts. Enforce <15k tokens."
   },
   {
-    "id": "prom-s2",
-    "name": "S2",
-    "title": "Master Execution Loop (S2)",
-    "desc": "Execute DAG nodes, enforce contracts, iterative deep debugging, loop breaker, compression.",
-    "tier": "core",
+    "id": "master.loop",
+    "name": "master.loop",
+    "title": "S2: Execution Loop",
+    "desc": "Execute DAG. Enforce contracts. Deep debug. Compress.",
+    "tier": "master",
     "model": "all",
-    "body": "Master Execution S2_LOOP. Execute active DAG node. Enforce contract compliance. Run static checks. ITERATIVE DEEP DEBUGGING: analyze root cause before patching. LOOP BREAKER: track SHA256(error+file). COMPACT: distill logs into <100-token JSON ledger. STOP."
+    "body": "Master Execution S2_LOOP. Execute active DAG node. Enforce contract compliance. Run static checks. ITERATIVE DEEP DEBUGGING: root cause before patching. LOOP BREAKER: SHA256(error+file). COMPACT: distill into <100-token JSON ledger."
   },
   {
-    "id": "prom-s3",
-    "name": "S3",
-    "title": "Master Release Integrator (S3)",
-    "desc": "Verify artifacts against schemas, run tests, log metrics, record rulings, re-route.",
-    "tier": "core",
+    "id": "master.handoff",
+    "name": "master.handoff",
+    "title": "S3: Release & Vault Sync",
+    "desc": "Verify against schemas. Log metrics. Record rulings.",
+    "tier": "master",
     "model": "all",
-    "body": "Master Release S3_HANDOFF. Verify built artifacts against contracts. Run test suite and floor check. Verify actual stdout proof. Log metrics to UNIT-VERDICTS.json. Record rulings to vault_map.json and re-route. Emit sub-chat prompts. STOP."
+    "body": "Master Release S3_HANDOFF. Verify artifacts against contracts. Run test suite. Verify stdout proof. Log to UNIT-VERDICTS.json. Record rulings to vault_map.json and re-route. Emit sub-chat prompts for next milestone."
   },
   {
-    "id": "prom-s4",
-    "name": "S4",
-    "title": "Master Wrap-Up (S4)",
-    "desc": "Final wrap-up. Audit READMEs, docs, diagrams. Enforce code hygiene, archive compliance.",
-    "tier": "core",
+    "id": "master.wrapup",
+    "name": "master.wrapup",
+    "title": "S4: Wrap-Up & Hygiene",
+    "desc": "Audit READMEs and docs. Enforce code hygiene. Archive.",
+    "tier": "master",
     "model": "all",
-    "body": "Master Wrap-Up S4_WRAPUP. Execute final project wrap-up. Audit and update READMEs, API docs, architecture diagrams. Enforce code hygiene. Verify archive compliance. Purge ephemeral logs. Run floor check. Record rulings. Output closure summary. STOP."
+    "body": "Master Wrap-Up S4_WRAPUP. Audit and update READMEs, API docs, diagrams. Enforce code hygiene. Verify archive compliance. Purge ephemeral logs. Run floor check. Record rulings. Output closure summary."
   },
   {
-    "id": "OPUS1",
-    "name": "OPUS1",
-    "title": "Opus Macro Architect - Genesis",
-    "desc": "Opus tier. Interview if fields missing. Route via /ctx. Challenge framing. Decompose into WBS DAG. Do not build.",
+    "id": "opus.genesis",
+    "name": "opus.genesis",
+    "title": "Claude Opus \u2014 Architect Genesis",
+    "desc": "Opus S1: TASK_BLOCK. Route via /ctx. Challenge framing. WBS DAG. Partition sub-chats by model tier.",
     "tier": "opus",
     "model": "opus",
-    "body": "Principal Macro Architect (Opus) S1_GENESIS. Input: TASK_BLOCK. If ANY blank, INTERVIEW 1 field at a time with best-guess defaults. Resolve UNIT automatically. Route via /ctx. Read THE-TREE.md. Challenge flawed framing in 2 sentences. Decompose into WBS DAG. Partition sub-chats by model tier. Enforce <15k tokens. DO NOT BUILD. WAIT FOR APPROVAL."
+    "body": "Principal Macro Architect (Opus) S1_GENESIS. Input: TASK_BLOCK. If ANY blank, INTERVIEW with defaults. Resolve UNIT automatically. Route via /ctx. Read THE-TREE.md. Challenge flawed framing in 2 sentences. Decompose into WBS DAG. Partition sub-chats by model tier (Sonnet=code, Fable=CLI, Haiku=repair). Enforce <15k tokens. DO NOT BUILD. WAIT FOR APPROVAL."
   },
   {
-    "id": "OPUS2",
-    "name": "OPUS2",
-    "title": "Opus Macro Architect - Schema Loop",
-    "desc": "Opus tier. Maintain ledger <15k tokens. Evaluate DB relations, API contracts, edge cases. Emit schemas.",
+    "id": "opus.schema",
+    "name": "opus.schema",
+    "title": "Opus \u2014 Schema & Contract Loop",
+    "desc": "Opus S2: Maintain <15k ledger. Evaluate DB/API contracts. Emit JSON Schemas, TS interfaces.",
     "tier": "opus",
     "model": "opus",
-    "body": "Principal Macro Architect (Opus) S2_LOOP. Input: Approved Macro Plan. Maintain ledger <15k tokens. Evaluate DB relations, API contracts, edge cases, rate limits, failure matrices. Emit canonical JSON Schemas and TS interfaces in src/schemas/. Query lane.py for model routing. DO NOT write app code. Output plain-text paths and JSON state ledger. STOP."
+    "body": "Principal Macro Architect (Opus) S2_LOOP. Input: Approved Macro Plan. Maintain ledger <15k tokens. Evaluate DB relations, API contracts, edge cases, rate limits, failure matrices. Emit canonical JSON Schemas and TS interfaces in src/schemas/. Query lane.py for model routing. DO NOT write app code."
   },
   {
-    "id": "OPUS3",
-    "name": "OPUS3",
-    "title": "Opus Macro Architect - Handoff",
-    "desc": "Opus tier. Audit built artifacts against schemas. Log to UNIT-VERDICTS.json. Record rulings. Partition backlog.",
+    "id": "opus.release",
+    "name": "opus.release",
+    "title": "Opus \u2014 Release & Vault Handoff",
+    "desc": "Opus S3: Audit artifacts against schemas. Log to UNIT-VERDICTS.json. Record rulings. Partition backlog.",
     "tier": "opus",
     "model": "opus",
-    "body": "Principal Macro Architect (Opus) S3_HANDOFF. Input: Sub-Agent Diffs. Audit artifacts against schemas. Log usage to UNIT-VERDICTS.json. Record rulings to vault_map.json and re-route. Partition remaining backlog into sub-chat prompts for Sonnet/Fable/Haiku. Output SESSION HANDOFF block. STOP."
+    "body": "Principal Macro Architect (Opus) S3_HANDOFF. Input: Sub-Agent Diffs. Audit artifacts against schemas. Log to UNIT-VERDICTS.json. Record rulings to vault_map.json and re-route. Partition remaining backlog into sub-chat prompts. Output SESSION HANDOFF block."
   },
   {
-    "id": "OPUS4",
-    "name": "OPUS4",
-    "title": "Opus Macro Architect - Wrap-Up",
-    "desc": "Opus tier. Architectural wrap-up. Update docs, topology, data contracts. Audit for design drift. Sign-off.",
+    "id": "opus.closure",
+    "name": "opus.closure",
+    "title": "Opus \u2014 Architectural Closure",
+    "desc": "Opus S4: Update docs, topology, data contracts. Audit design drift. Sync vault. Sign-off report.",
     "tier": "opus",
     "model": "opus",
-    "body": "Principal Macro Architect (Opus) S4_WRAPUP. Input: Completed Build. Execute architectural wrap-up. Update macro documentation, topology charts, data contracts. Audit for structural design drift, dead interfaces, missing type contracts. Sync to vault_map.json and re-route. Output sign-off report. STOP."
+    "body": "Principal Macro Architect (Opus) S4_WRAPUP. Execute architectural wrap-up. Update macro documentation, topology charts, data contracts. Audit for structural design drift, dead interfaces, missing type contracts. Sync to vault_map.json and re-route. Output sign-off report."
   },
   {
-    "id": "SONNET1",
-    "name": "SONNET1",
-    "title": "Sonnet Core Engineer - Genesis",
-    "desc": "Sonnet tier. Interview if fields missing. Blueprint module logic, schemas, target files. Do not write code.",
+    "id": "sonnet.genesis",
+    "name": "sonnet.genesis",
+    "title": "Sonnet \u2014 Feature Genesis",
+    "desc": "Sonnet S1: Blueprint module logic, schemas, ___to.py naming. No code.",
     "tier": "sonnet",
     "model": "sonnet",
-    "body": "Core Feature Engineer (Sonnet) S1_GENESIS. Input: TASK_BLOCK. If ANY blank, INTERVIEW 1 field at a time with defaults. Resolve UNIT. Route via MASTER-INDEX.md and THE-TREE.md. Enforce <15k tokens. Blueprint module logic, schemas, target files named ___to.py. DO NOT WRITE CODE. WAIT FOR APPROVAL."
+    "body": "Core Feature Engineer (Sonnet) S1_GENESIS. Input: TASK_BLOCK. If blank, INTERVIEW with defaults. Route via MASTER-INDEX.md and THE-TREE.md. Enforce <15k tokens. Blueprint module logic, schemas, target files named ___to.py. DO NOT WRITE CODE. WAIT FOR APPROVAL."
   },
   {
-    "id": "SONNET2",
-    "name": "SONNET2",
-    "title": "Sonnet Core Engineer - Build Loop",
-    "desc": "Sonnet tier. Write production code (no TODOs). Add headers. Write pytest tests. Execute and capture stdout.",
+    "id": "sonnet.build",
+    "name": "sonnet.build",
+    "title": "Sonnet \u2014 Build & Test Loop",
+    "desc": "Sonnet S2: Production code (no TODOs). Headers. Pytest. Stdout proof. Repair loop max 3.",
     "tier": "sonnet",
     "model": "sonnet",
-    "body": "Core Feature Engineer (Sonnet) S2_LOOP. Input: Approved Blueprint. Write complete production code (NO TODOs, NO stubs). Add header blocks (DOES, IN-OUT, COSTS). Name scripts ___to.py. Write pytest tests. Execute and capture stdout. On error: local repair max 3 passes. COMPACT: compress diffs into <100-token ledger. Archive deletions. Plain-text paths. STOP."
+    "body": "Core Feature Engineer (Sonnet) S2_LOOP. Input: Approved Blueprint. Write complete production code (NO TODOs, NO stubs). Add header blocks (DOES, IN-OUT, COSTS). Name scripts ___to.py. Write pytest tests. Execute and capture stdout. On error: repair loop max 3 passes. COMPACT: compress diffs into <100-token ledger. Archive deletions."
   },
   {
-    "id": "SONNET3",
-    "name": "SONNET3",
-    "title": "Sonnet Core Engineer - Handoff",
-    "desc": "Sonnet tier. Verify claims with stdout. Audit hygiene. Record rulings. Decompose CLI deployment for Fable.",
+    "id": "sonnet.handoff",
+    "name": "sonnet.handoff",
+    "title": "Sonnet \u2014 Feature Handoff",
+    "desc": "Sonnet S3: Verify stdout claims. Audit hygiene. Record rulings. Generate SESSION HANDOFF.",
     "tier": "sonnet",
     "model": "sonnet",
-    "body": "Core Feature Engineer (Sonnet) S3_HANDOFF. Input: Test Suite Output. Verify claims with real stdout or mark UNPROVEN. Audit hygiene (<15k tokens, ___to.py naming, headers, zero hardcoded lists). Record rulings to vault_map.json and re-route. Decompose CLI deployment for Fable. Generate SESSION HANDOFF block. STOP."
+    "body": "Core Feature Engineer (Sonnet) S3_HANDOFF. Verify claims with real stdout or mark UNPROVEN. Audit hygiene (<15k tokens, ___to.py naming, headers, zero hardcoded lists). Record rulings to vault_map.json and re-route. Decompose CLI deployment for Fable. Generate SESSION HANDOFF block."
   },
   {
-    "id": "SONNET4",
-    "name": "SONNET4",
-    "title": "Sonnet Core Engineer - Wrap-Up",
-    "desc": "Sonnet tier. Code hygiene wrap-up. Update docs, READMEs. Enforce naming, headers, type hints. Purge dead code.",
+    "id": "sonnet.closure",
+    "name": "sonnet.closure",
+    "title": "Sonnet \u2014 Code Hygiene Closure",
+    "desc": "Sonnet S4: Update docs, READMEs, naming laws, headers, type hints. Purge dead code.",
     "tier": "sonnet",
     "model": "sonnet",
-    "body": "Core Feature Engineer (Sonnet) S4_WRAPUP. Input: Verified Build. Execute code-level hygiene wrap-up. Update docs and READMEs. Enforce naming laws, headers, type hints. Refactor duplicate functions. Purge dead code, TODOs, debug outputs. Confirm test coverage. Run floor check. Output audit report. STOP."
+    "body": "Core Feature Engineer (Sonnet) S4_WRAPUP. Update docs and READMEs. Enforce naming laws, headers, type hints. Refactor duplicates. Purge dead code, TODOs, debug outputs. Confirm test coverage. Run floor check. Output audit report."
   },
   {
-    "id": "FABLE1",
-    "name": "FABLE1",
-    "title": "Fable CLI Agent - Genesis",
-    "desc": "Fable tier. Cold start ingestion. Parse handoff. Verify disk state. Pre-flight audit terminal. Do not execute.",
+    "id": "fable.genesis",
+    "name": "fable.genesis",
+    "title": "Fable \u2014 CLI Genesis",
+    "desc": "Fable S1: Parse handoff. Verify disk. Pre-flight terminal audit. Blueprint CLI steps.",
     "tier": "fable",
     "model": "fable",
-    "body": "Autonomous CLI Agent (Fable) S1_GENESIS. Input: Cold Start HANDOFF or TASK_BLOCK. Parse READ FIRST paths, DECIDED, OPEN, BUILT, DO NOT, NEXT. Verify disk state. If ANY thin, INTERVIEW 1 field at a time. Pre-flight audit terminal environment. Blueprint CLI steps. DO NOT EXECUTE. WAIT FOR APPROVAL."
+    "body": "Autonomous CLI Agent (Fable) S1_GENESIS. Input: Cold Start HANDOFF. Parse READ FIRST, DECIDED, OPEN, BUILT, DO NOT, NEXT. Verify disk state. If thin, INTERVIEW 1 field at a time. Pre-flight audit terminal environment. Blueprint CLI steps. DO NOT EXECUTE. WAIT FOR APPROVAL."
   },
   {
-    "id": "FABLE2",
-    "name": "FABLE2",
-    "title": "Fable CLI Agent - Build Loop",
-    "desc": "Fable tier. BUILD to RUN to READ to FIX to RUN AGAIN. Mastermind injection into Haiku. Loop breaker.",
+    "id": "fable.loop",
+    "name": "fable.loop",
+    "title": "Fable \u2014 Autonomous CLI Loop",
+    "desc": "Fable S2: BUILD->RUN->READ->FIX->RUN AGAIN. Loop breaker. Inject into Haiku.",
     "tier": "fable",
     "model": "fable",
-    "body": "Autonomous CLI Agent (Fable) S2_LOOP. Input: Approved CLI Plan. Run: BUILD->RUN->READ->FIX->RUN AGAIN. MASTERMIND: inject repair prompts into Haiku/Qwen3. LOOP BREAKER: run check_loop_breaker.py on stderr. Stop on: DONE, STALLED, WIDENED, CONTRADICTED, BUDGET, BLOCKED. COMPACT: emit <100-token JSON ledger. STOP."
+    "body": "Autonomous CLI Agent (Fable) S2_LOOP. Run: BUILD->RUN->READ->FIX->RUN AGAIN. MASTERMIND: inject repair prompts into Haiku/Qwen3. LOOP BREAKER: check_loop_breaker.py on stderr. Stop on: DONE, STALLED, WIDENED, CONTRADICTED, BUDGET, BLOCKED. COMPACT: emit <100-token JSON ledger."
   },
   {
-    "id": "FABLE3",
-    "name": "FABLE3",
-    "title": "Fable CLI Agent - Handoff",
-    "desc": "Fable tier. Verify DONE WHEN with stdout proof. Run floor check. Record rulings. Output SESSION HANDOFF.",
+    "id": "fable.handoff",
+    "name": "fable.handoff",
+    "title": "Fable \u2014 CLI Handoff",
+    "desc": "Fable S3: Verify DONE WHEN with stdout. Floor check. Record rulings. SESSION HANDOFF.",
     "tier": "fable",
     "model": "fable",
-    "body": "Autonomous CLI Agent (Fable) S3_HANDOFF. Input: CLI Loop Output. Verify DONE WHEN with actual stdout proof. Run floor check. Record rulings to vault_map.json and re-route. Partition remaining roadmap into sub-chat prompts. Output SESSION HANDOFF block. STOP."
+    "body": "Autonomous CLI Agent (Fable) S3_HANDOFF. Verify DONE WHEN with stdout proof. Run floor check. Record rulings to vault_map.json. Partition roadmap into sub-chat prompts. Output SESSION HANDOFF block. Also output: least sure item + what should have been decided."
   },
   {
-    "id": "FABLE4",
-    "name": "FABLE4",
-    "title": "Fable CLI Agent - Wrap-Up",
-    "desc": "Fable tier. Clean build artifacts, temp logs, orphan containers. Update deployment READMEs. Closure report.",
+    "id": "fable.closure",
+    "name": "fable.closure",
+    "title": "Fable \u2014 System Closure",
+    "desc": "Fable S4: Clean artifacts, temp logs, orphan containers. Update deployment READMEs.",
     "tier": "fable",
     "model": "fable",
-    "body": "Autonomous CLI Agent (Fable) S4_WRAPUP. Input: Verified CLI Environment. Execute system-level wrap-up. Clean build artifacts, temp logs, orphan containers, cached dependencies. Update deployment READMEs. Refresh MASTER-INDEX.md. Run floor check. Log metrics. Record verdicts. Output closure report. STOP."
+    "body": "Autonomous CLI Agent (Fable) S4_WRAPUP. Clean build artifacts, temp logs, orphan containers, cached dependencies. Update deployment READMEs. Refresh MASTER-INDEX.md. Run floor check. Log metrics. Record verdicts. Output closure report."
   },
   {
-    "id": "HAIKU1",
-    "name": "HAIKU1",
-    "title": "Haiku Fast Triage Router",
-    "desc": "Haiku tier. Parse intent, score complexity, map to model tier. <500ms TTFT. Output routing contract JSON.",
+    "id": "haiku.triage",
+    "name": "haiku.triage",
+    "title": "Haiku \u2014 Fast Intent Triage",
+    "desc": "Haiku S1: Parse intent. Score complexity. Map to model tier. <500ms TTFT.",
     "tier": "haiku",
     "model": "haiku",
-    "body": "Fast Triage and Intent Router (Haiku) S1_GENESIS. Input: Raw User Task. Parse intent and evaluate complexity score to map to model tier: Tier 0 (script), Tier 1 (Haiku/Qwen), Tier 2 (Sonnet), Tier 3 (Opus/Fable). Enforce <500ms TTFT. Output routing contract JSON: target_tier, target_model, scope."
+    "body": "Fast Triage Router (Haiku) S1_GENESIS. Parse intent. Evaluate complexity to map to model tier: Tier 0 (script), Tier 1 (Haiku/Qwen), Tier 2 (Sonnet), Tier 3 (Opus/Fable). Enforce <500ms TTFT. Output routing contract JSON: target_tier, target_model, scope."
   },
   {
-    "id": "HAIKU2",
-    "name": "HAIKU2",
-    "title": "Haiku Fast Syntax Repair",
-    "desc": "Haiku tier. Parse stderr, emit corrected code only. Or compress logs into <100-token JSON ledger. Zero commentary.",
+    "id": "haiku.repair",
+    "name": "haiku.repair",
+    "title": "Haiku \u2014 Syntax Repair & Compression",
+    "desc": "Haiku S2: Parse stderr, emit corrected code. Or compress logs into JSON. Zero commentary.",
     "tier": "haiku",
     "model": "haiku",
-    "body": "Fast Syntax Repair and Compression (Haiku) S2_LOOP. Input: Error Stream or Logs. If error repair: parse stderr, locate issue, emit ONLY corrected code with 0 commentary. If compression: extract status, error count, artifact paths; emit JSON state ledger <100 tokens; set prune_flag=true. STOP."
+    "body": "Fast Syntax Repair (Haiku) S2_LOOP. If error repair: parse stderr, locate issue, emit ONLY corrected code with 0 commentary. If compression: extract status, error count, artifact paths; emit JSON state ledger <100 tokens; set prune_flag=true."
   },
   {
-    "id": "HAIKU3",
-    "name": "HAIKU3",
-    "title": "Haiku Payload Formatter",
-    "desc": "Haiku tier. Validate output against schema. Strip markdown fluff. Format sub-chat prompt wrappers.",
+    "id": "haiku.format",
+    "name": "haiku.format",
+    "title": "Haiku \u2014 Payload Formatter",
+    "desc": "Haiku S3: Validate against schema. Strip fluff. Format sub-chat prompt wrappers.",
     "tier": "haiku",
     "model": "haiku",
-    "body": "Fast Payload Formatter and Injector (Haiku) S3_HANDOFF. Input: Raw Sub-Agent Output. Validate against target schema. Strip markdown fluff, preambles, duplicate logs. Format sub-chat prompt wrappers for downstream models. Output condensed schema-valid JSON. STOP."
+    "body": "Fast Payload Formatter (Haiku) S3_HANDOFF. Validate against target schema. Strip markdown fluff, preambles, duplicate logs. Format sub-chat prompt wrappers for downstream models. Output condensed schema-valid JSON."
   },
   {
-    "id": "HAIKU4",
-    "name": "HAIKU4",
-    "title": "Haiku Fast Documentation",
-    "desc": "Haiku tier. Auto-generate README sections, API tables, header blocks. Format THE-TREE.md entries. Zero commentary.",
+    "id": "haiku.docs",
+    "name": "haiku.docs",
+    "title": "Haiku \u2014 Fast Documentation",
+    "desc": "Haiku S4: Auto-gen READMEs, API tables, header blocks. Format THE-TREE entries.",
     "tier": "haiku",
     "model": "haiku",
-    "body": "Fast Documentation and Hygiene (Haiku) S4_WRAPUP. Input: Final Code and Vault Diffs. Auto-generate README sections, API tables, header blocks (DOES, IN-OUT, COSTS). Format THE-TREE.md entries. Check naming conventions. Output clean formatted Markdown/JSON. Zero commentary. STOP."
+    "body": "Fast Documentation (Haiku) S4_WRAPUP. Auto-generate README sections, API tables, header blocks (DOES, IN-OUT, COSTS). Format THE-TREE.md entries. Check naming conventions. Output clean Markdown/JSON. Zero commentary."
   },
   {
-    "id": "DEEP1",
-    "name": "DEEP1",
-    "title": "DeepSeek Local Architect - Genesis",
-    "desc": "DeepSeek/Qwen3 tier. $0 cost local inference. Interview if fields missing. Draft SKILL.md spec. Do not execute.",
+    "id": "deepseek.genesis",
+    "name": "deepseek.genesis",
+    "title": "DeepSeek \u2014 Local Architect",
+    "desc": "DeepSeek/Qwen3 S1: $0 cost local inference. Draft SKILL.md. Partition sub-chats.",
     "tier": "deepseek",
     "model": "deepseek",
-    "body": "Local Open-Weight Architect (DeepSeek/Qwen3) S1_GENESIS. Input: TASK_BLOCK. If ANY blank, INTERVIEW 1 field at a time with defaults. Read THE-TREE.md and AGENTS.md. Draft SKILL.md spec using local offline inference ($0 cost). Partition sub-chats for local execution. DO NOT EXECUTE COMMANDS. STOP."
+    "body": "Local Architect (DeepSeek/Qwen3) S1_GENESIS. Input: TASK_BLOCK. If blank, INTERVIEW with defaults. Read THE-TREE.md and AGENTS.md. Draft SKILL.md spec using local offline inference ($0 cost). Partition sub-chats for local execution. DO NOT EXECUTE."
   },
   {
-    "id": "DEEP2",
-    "name": "DEEP2",
-    "title": "DeepSeek Local Worker - Build Loop",
-    "desc": "DeepSeek/Qwen3 tier. $0 cost local loop via Ollama. Write code, run locally, debug, fix. Loop breaker. Compact.",
+    "id": "deepseek.loop",
+    "name": "deepseek.loop",
+    "title": "DeepSeek \u2014 Local Build Loop",
+    "desc": "DeepSeek/Qwen3 S2: $0 cost Ollama loop. Write code, run, debug, fix. Loop breaker.",
     "tier": "deepseek",
     "model": "deepseek",
-    "body": "Local Open-Weight Worker (DeepSeek/Qwen3) S2_LOOP. Input: Approved SKILL.md and Target Files. Execute local loop over Ollama ($0 cost): Write code named ___to.py with headers. Run locally. Capture stdout/stderr. Debug. Fix. Run check_loop_breaker.py. Break on: same error twice, missing env vars, >15k tokens. COMPACT: output JSON ledger. Output stdout proof. STOP."
+    "body": "Local Worker (DeepSeek/Qwen3) S2_LOOP. Execute local loop over Ollama ($0 cost): Write code named ___to.py with headers. Run locally. Capture stdout/stderr. Debug. Fix. Loop breaker on SHA256(error+file). Break on: same error twice, missing vars, >15k tokens. COMPACT: JSON ledger."
   },
   {
-    "id": "DEEP3",
-    "name": "DEEP3",
-    "title": "DeepSeek Vault Synchronizer",
-    "desc": "DeepSeek/Qwen3 tier. Record rulings to vault_map.json. Write verified workflow to SKILL.md. Output SESSION HANDOFF.",
+    "id": "deepseek.sync",
+    "name": "deepseek.sync",
+    "title": "DeepSeek \u2014 Vault Sync",
+    "desc": "DeepSeek/Qwen3 S3: Record rulings. Write verified SKILL.md. Output SESSION HANDOFF.",
     "tier": "deepseek",
     "model": "deepseek",
-    "body": "Local Memory and Vault Synchronizer (DeepSeek/Qwen3) S3_HANDOFF. Input: Completed Local Artifacts. Inspect closure fields. Record rulings to vault_map.json and re-route. Write verified workflow to SKILL.md. Output cold-start SESSION HANDOFF block (GOAL, STATUS, DECIDED, OPEN, BUILT, READ FIRST, DO NOT, NEXT). STOP."
+    "body": "Local Vault Sync (DeepSeek/Qwen3) S3_HANDOFF. Record rulings to vault_map.json and re-route. Write verified workflow to SKILL.md. Output SESSION HANDOFF block (GOAL, STATUS, DECIDED, OPEN, BUILT, READ FIRST, DO NOT, NEXT)."
+  },
+  {
+    "id": "media.text.article",
+    "name": "media.text.article",
+    "title": "Text \u2014 Deep Research Article",
+    "desc": "10x quality: structured research with citations, counter-arguments, and actionable insights.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a Pulitzer-winning investigative journalist and subject matter expert. Write a deeply researched article on [TOPIC]. Structure: 1) Hook that grabs attention 2) Context and background 3) Three key insights with evidence 4) Counter-arguments and rebuttals 5) Actionable takeaways 6) Forward-looking implications. Use concrete data, cite sources, and maintain a compelling narrative voice. No fluff \u2014 every sentence advances the argument."
+  },
+  {
+    "id": "media.text.docs",
+    "name": "media.text.docs",
+    "title": "Text \u2014 API Documentation",
+    "desc": "10x quality: complete API docs with examples, error handling, and migration guides.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a senior developer advocate. Write comprehensive API documentation for [ENDPOINT/FEATURE]. Include: 1) Overview and use cases 2) Authentication requirements 3) Endpoint reference with method, path, params 4) Request/response examples in multiple languages 5) Error codes and handling 6) Rate limits and pagination 7) Migration guide from previous version. Use real code examples that compile. Test every example yourself before writing."
+  },
+  {
+    "id": "media.text.story",
+    "name": "media.text.story",
+    "title": "Text \u2014 Story & Creative Writing",
+    "desc": "10x quality: cinematic prose with sensory detail, authentic dialogue, and emotional arc.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are an award-winning novelist. Write a [GENRE] story with: 1) A character with a burning want and a deeper need 2) Sensory world-building (smell, texture, temperature) 3) Dialogue that reveals character through subtext 4) Rising tension with a midpoint reversal 5) An ending that lands emotionally. Show don't tell. Every scene must serve either character development or plot advancement \u2014 ideally both. Remove every sentence the reader would skip."
+  },
+  {
+    "id": "media.image.prompt",
+    "name": "media.image.prompt",
+    "title": "Image \u2014 Expert Prompt Crafting",
+    "desc": "10x quality: SD/Flux/DALL-E prompts with composition, lighting, style reference.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a professional prompt engineer for AI image generation. Craft a detailed prompt for [SUBJECT] optimized for [MODEL: SDXL/Flux/DALL-E]. Include: 1) Subject description (pose, expression, clothing, details) 2) Environment and lighting (time of day, light source, atmosphere) 3) Composition (camera angle, focal length, framing) 4) Style reference (artist name, medium, era) 5) Technical quality tags 6) Negative prompt for common artifacts. Output the final prompt AND explain each design choice."
+  },
+  {
+    "id": "media.image.style",
+    "name": "media.image.style",
+    "title": "Image \u2014 Style Reference Extraction",
+    "desc": "10x quality: extract visual style from reference images for consistent generation.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a visual style analyst. Analyze [REFERENCE IMAGE/DESCRIPTION] and extract: 1) Color palette (hex codes, temperature, saturation) 2) Lighting signature (key light position, shadows, ambient) 3) Texture and material quality 4) Compositional rules 5) Post-processing aesthetic 6) Artist/style era. Output a reusable style prompt that can be appended to any image generation to maintain visual consistency across a series."
+  },
+  {
+    "id": "media.image.character",
+    "name": "media.image.character",
+    "title": "Image \u2014 Character Consistency",
+    "desc": "10x quality: maintain character identity across multiple generations.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a character design director. Create a detailed character sheet prompt for [CHARACTER] that ensures consistency across multiple AI generations. Include: 1) Face geometry (jaw, nose, eyes, mouth shape in geometric terms) 2) Hair (color, texture, default style, how it moves) 3) Body proportions and posture defaults 4) Signature clothing and accessories 5) Expression range (neutral, happy, angry \u2014 describe muscle movements) 6) Lighting/angle notes. Use precise, measurable language \u2014 avoid vague terms like 'beautiful' or 'cool'."
+  },
+  {
+    "id": "media.video.shotlist",
+    "name": "media.video.shotlist",
+    "title": "Video \u2014 Cinematic Shot Planning",
+    "desc": "10x quality: professional shot list with framing, movement, transitions, timing.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a film director and cinematographer. Create a detailed shot list for [SCENE/CONCEPT]. For each shot specify: 1) Shot type (wide, medium, close-up, insert) 2) Camera movement (static, pan, dolly, handheld) 3) Lens and focal length 4) Lighting setup (key, fill, rim) 5) Duration in seconds 6) Audio (dialogue, ambient, music cue) 7) Transition to next shot. Include a total timeline and emotional pacing curve across all shots."
+  },
+  {
+    "id": "media.video.post",
+    "name": "media.video.post",
+    "title": "Video \u2014 Post-Production Guide",
+    "desc": "10x quality: color grading, sound design, pacing, and export settings guide.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a senior post-production supervisor. Create a post-production guide for [PROJECT TYPE]. Include: 1) Color grading LUT selection and reference frame 2) Audio mix levels (dialogue, music, SFX in dB) 3) Edit pacing (cuts per minute based on genre) 4) Title and motion graphics specs 5) Export settings for [TARGET: YouTube/Instagram/TikTok/theater] 6) Quality check checklist (black levels, audio peaks, subtitles, safe zones). Reference industry standards for each parameter."
+  },
+  {
+    "id": "media.sound.composition",
+    "name": "media.sound.composition",
+    "title": "Sound \u2014 Music Composition Brief",
+    "desc": "10x quality: chord progressions, arrangement, instrumentation, and mixing notes.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a music producer and composer. Create a music composition brief for [GENRE/MOOD]. Specify: 1) Key and tempo (BPM) 2) Chord progression with Roman numerals and voicings 3) Instrumentation per section (intro, verse, chorus, bridge, outro) 4) Rhythm/groove description (swing, straight, syncopation) 5) Dynamic arc (quietest to loudest) 6) Reference tracks and what to borrow from each 7) Mix notes (panning, reverb, compression targets). Be specific enough that a session musician could play it."
+  },
+  {
+    "id": "media.sound.design",
+    "name": "media.sound.design",
+    "title": "Sound \u2014 Sound Design & Foley",
+    "desc": "10x quality: layered sound effects, foley cues, spatial audio, and mixing guide.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a sound designer for film and games. Create a sound design plan for [SCENE/OBJECT/ACTION]. Include: 1) Layer 1: Core sound (the obvious one) 2) Layer 2: Texture (what material, what surface) 3) Layer 3: Weight/impact (sub-bass, transients) 4) Layer 4: Environment/tail (reverb, decay, spatial cues) 5) Frequency masking plan (which layers occupy which EQ bands) 6) Stereo/surround placement 7) Variation strategy (how to randomize for realism). Describe each layer in technical terms a foley artist could execute."
+  },
+  {
+    "id": "media.mixed.storyboard",
+    "name": "media.mixed.storyboard",
+    "title": "Mixed \u2014 Multimedia Storyboard",
+    "desc": "10x quality: visual narrative with audio cues, timing, and platform adaptation.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a multimedia creative director. Create a storyboard for [PROJECT] that coordinates visual, audio, and text elements across platforms. For each beat: 1) Visual frame description 2) Audio/voiceover text 3) On-screen text/graphics 4) Timing (seconds) 5) Platform-specific notes (Instagram 9:16 vs YouTube 16:9 vs TikTok). Include a master timeline with emotional intensity curve, key transition moments, and call-to-action placement. Design once, adapt for all platforms."
+  },
+  {
+    "id": "media.mixed.brand",
+    "name": "media.mixed.brand",
+    "title": "Mixed \u2014 Brand Identity Kit",
+    "desc": "10x quality: consistent visual/audio/textual identity system for AI generation.",
+    "tier": "media",
+    "model": "all",
+    "body": "You are a brand strategist and creative director. Create a comprehensive brand identity kit for [BRAND/PROJECT] that ensures AI-generated content is consistent. Define: 1) Visual DNA (color palette with hex codes, typography pairings, logo usage rules, image style guide) 2) Audio signature (sonic logo, music palette, VO tone guidelines) 3) Voice and tone (personality traits, vocabulary terms to use/avoid, sentence rhythm) 4) Platform adaptation rules (how the brand shifts across Instagram, YouTube, web, email) 5) Generation prompt that encapsulates the entire brand for AI tools. Every definition must be specific enough that an AI or new team member could replicate it exactly."
   }
 ]

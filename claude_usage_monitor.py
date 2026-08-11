@@ -68,10 +68,41 @@ def get_week_bounds():
 
 
 def get_threshold(config):
-    """Calculate the daily prorated threshold: day_index / divisor."""
+    """Calculate the daily prorated cumulative threshold: day_index / divisor of weekly cap."""
     day_idx = get_day_index()
     divisor = config.get("divisor", 7)
     return day_idx / divisor
+
+
+def compute_daily_pct(config):
+    """
+    NEW DAILY %: today's tokens / remaining budget available today.
+    - Remaining budget = max(0, cumulative_threshold_tokens - prior_days_tokens)
+      where prior_days_tokens = tokens used before today this week.
+    - Starts at 0% every morning. Goes up as you use tokens today.
+    - If you blew past the cumulative threshold before today, 
+      remaining_budget = 0 → daily_pct caps at 999%.
+    Returns (daily_pct, today_tokens, remaining_budget_tokens).
+    """
+    weekly_cap = config.get("weekly_token_cap", 50000000)
+    threshold_pct = get_threshold(config)
+    cumulative_threshold = int(weekly_cap * threshold_pct)
+
+    # Get today's tokens + prior days' tokens
+    today_tokens = get_today_tokens(config)
+    total_weekly, _ = get_usage_percent(config)
+    prior_tokens = total_weekly - today_tokens
+
+    remaining_budget = max(0, cumulative_threshold - prior_tokens)
+
+    if remaining_budget > 0:
+        daily_pct = (today_tokens / remaining_budget * 100)
+    elif today_tokens > 0:
+        daily_pct = 999  # Already blew past every budget — show max
+    else:
+        daily_pct = 0
+
+    return daily_pct, today_tokens, remaining_budget
 
 
 def get_usage_percent(config):
@@ -325,9 +356,10 @@ def should_notify(tier, daily_pct, config):
     the same day. State resets each day.
 
     Tiers:
-      'yellow' — fires when daily allowance hits 60%
-      'red'    — fires when daily allowance hits 80%
-      'breach' — fires when daily allowance hits 100%
+      'yellow'   — fires when daily allowance hits 60%
+      'red'      — fires when daily allowance hits 80%
+      'breach'   — fires when daily allowance hits 100% (writes throttle flag)
+      'critical' — fires when daily allowance hits 125% (alarm + throttle flag)
     """
     state_path = os.path.join(SCRIPT_DIR, "notify_state.json")
     today_str = datetime.date.today().isoformat()
@@ -365,6 +397,12 @@ def should_notify(tier, daily_pct, config):
             state["notified"] = notified
             _save_state(state_path, state)
             return True
+    elif tier == "critical":
+        if daily_pct >= 125:
+            notified.append("critical")
+            state["notified"] = notified
+            _save_state(state_path, state)
+            return True
 
     return False
 
@@ -381,6 +419,7 @@ def main():
     dry_run = "--dry-run" in sys.argv
     force_toast = "--test-toast" in sys.argv
     fire_toast_mode = "--fire-toast" in sys.argv
+    refresh_mode = "--refresh" in sys.argv
 
     # --- Direct toast firing mode (called by fire_toast_detached) ---
     if fire_toast_mode:
@@ -435,10 +474,12 @@ def main():
 
     # --- Normal run ---
     total_tokens, usage_pct = get_usage_percent(config)
-    daily_pct = (usage_pct / threshold_pct * 100) if threshold_pct > 0 else 0
+    daily_pct, today_tokens, remaining_budget = compute_daily_pct(config)
+    threshold_pct = threshold * 100
 
-    log(f"Day {day_idx}/7, threshold={threshold_pct:.2f}%, usage={usage_pct:.2f}% "
-        f"({total_tokens:,} tokens), daily={daily_pct:.0f}%")
+    log(f"Day {day_idx}/7, threshold={threshold_pct:.2f}%, weekly={usage_pct:.2f}% "
+        f"({total_tokens:,} tokens), daily={daily_pct:.0f}%, "
+        f"remaining_budget={remaining_budget:,}")
 
     # Write refresh signal for the desktop widget (if running)
     try:
@@ -453,20 +494,19 @@ def main():
         hourly_pct = get_hourly_pct(config)
         hourly_tokens = int(weekly_cap * hourly_pct / 100)
         tokens_5h, prompts_5h, minutes_to_reset = get_5h_window(config)
-        today_tokens = get_today_tokens(config)
-        today_pct = (today_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
+        today_tokens_val = get_today_tokens(config)
+        today_pct = (today_tokens_val / weekly_cap * 100) if weekly_cap > 0 else 0
         threshold_tokens = int(weekly_cap * threshold_pct / 100)
-        remaining_today_tokens = max(0, int(threshold_tokens - total_tokens))
+        remaining_today_tokens = remaining_budget - today_tokens_val
         remaining_today_pct = max(0, 100 - daily_pct)
 
-        # Time to limit: if burning at hourly_pct, how many hours until daily 100%
-        if hourly_pct > 0 and daily_pct < 100:
-            pct_to_burn = 100 - daily_pct
-            # hourly_pct is % of weekly cap per hour; daily_pct is % of threshold
-            # Convert: hours = (pct_to_burn * threshold_pct) / (hourly_pct * 100)
-            hours_to_limit = (pct_to_burn * threshold_pct) / (hourly_pct * 100) if hourly_pct > 0 else 0
+        # Time to limit: how many hours until daily_pct hits 100%
+        if hourly_pct > 0 and daily_pct < 100 and remaining_budget > 0:
+            tokens_left = max(0, remaining_budget - today_tokens_val)
+            hourly_tokens_rate = max(1, int(weekly_cap * hourly_pct / 100))
+            hours_to_limit = tokens_left / hourly_tokens_rate
         else:
-            hours_to_limit = 0
+            hours_to_limit = 0 if daily_pct < 100 else 0
 
         usage_data = {
             "daily_pct": daily_pct,
@@ -496,29 +536,50 @@ def main():
     # Check tiers: breach > red > yellow (only fire one per run, highest priority)
     fired = False
 
-    if should_notify("breach", daily_pct, config):
+    if should_notify("critical", daily_pct, config):
         msg = (
-            f"You've used {daily_pct:.0f}% of today's allowance — "
-            f"over the daily budget (Day {day_idx}/7). "
-            f"Weekly usage: {usage_pct:.1f}%. Stop to keep access all week."
+            f"CRITICAL: {daily_pct:.0f}% of today's remaining budget used "
+            f"(Day {day_idx}/7). You're 25% OVER the daily allowance. "
+            f"Switch to Haiku or pause until tomorrow."
+        )
+        log(f"CRITICAL — firing blocking alarm toast: {msg}")
+        fire_toast_detached("Claude Budget CRITICAL — Over Limit", msg, "alarm")
+        # Write throttle flag to disk
+        try:
+            with open(os.path.join(SCRIPT_DIR, "throttle.flag"), "w") as f:
+                f.write(str(daily_pct))
+        except Exception:
+            pass
+        fired = True
+    elif should_notify("breach", daily_pct, config):
+        msg = (
+            f"You've used {daily_pct:.0f}% of today's remaining budget "
+            f"(Day {day_idx}/7). Weekly: {usage_pct:.1f}%. "
+            f"Consider switching to /model haiku to preserve allowance."
         )
         log(f"BREACH — firing toast: {msg}")
         fire_toast_detached("Claude Budget Breach", msg, "urgent")
+        # Write throttle suggestion
+        try:
+            with open(os.path.join(SCRIPT_DIR, "throttle.flag"), "w") as f:
+                f.write(str(daily_pct))
+        except Exception:
+            pass
         fired = True
     elif should_notify("red", daily_pct, config):
         msg = (
-            f"You've used {daily_pct:.0f}% of today's allowance "
+            f"You've used {daily_pct:.0f}% of today's remaining budget "
             f"(Day {day_idx}/7). Weekly: {usage_pct:.1f}%. "
-            f"20% left for today — almost at the limit."
+            f"Almost at the daily limit — slow down."
         )
         log(f"RED — firing toast: {msg}")
         fire_toast_detached("Claude Budget — 80% Used", msg, "urgent")
         fired = True
     elif should_notify("yellow", daily_pct, config):
         msg = (
-            f"You've used {daily_pct:.0f}% of today's allowance "
+            f"You've used {daily_pct:.0f}% of today's remaining budget "
             f"(Day {day_idx}/7). Weekly: {usage_pct:.1f}%. "
-            f"Heads up — 40% left for today."
+            f"Pacing OK — just a heads up."
         )
         log(f"YELLOW — firing toast: {msg}")
         fire_toast_detached("Claude Budget — 60% Used", msg, "urgent")

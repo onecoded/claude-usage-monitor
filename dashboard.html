@@ -45,6 +45,7 @@ body {
   font-family: 'Segoe UI', -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Scan line effect */
@@ -58,7 +59,7 @@ body::before {
   z-index: 9999;
 }
 
-.container { max-width: 560px; margin: 0 auto; padding: 20px; }
+.container { max-width: 560px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; min-height: 100vh; }
 
 /* Header */
 .header {
@@ -91,15 +92,15 @@ body::before {
 }
 .icon-btn:hover { border-color: var(--border-glow); color: var(--cyan); }
 
-/* Token Clock — top 1/3 */
+/* Token Clock — compact top section */
 .clock-section {
   text-align: center;
-  padding: 30px 20px 20px;
+  padding: 20px 16px 14px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 14px;
   backdrop-filter: blur(20px);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   position: relative;
   overflow: hidden;
 }
@@ -118,7 +119,7 @@ body::before {
 }
 
 .daily-pct {
-  font-size: 88px;
+  font-size: 48px;
   font-weight: 900;
   font-family: 'Consolas', 'SF Mono', monospace;
   line-height: 1;
@@ -171,63 +172,63 @@ body::before {
 }
 .bar-today-glow { background: var(--green); box-shadow: 0 0 8px var(--green); }
 
-/* Stats grid */
+/* Stats — compact inline row */
 .stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
   position: relative; z-index: 1;
 }
 .stat {
+  flex: 1;
   background: rgba(255,255,255,0.03);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 8px;
+  padding: 8px 4px;
   text-align: center;
 }
 .stat-value {
-  font-size: 22px; font-weight: bold;
+  font-size: 16px; font-weight: bold;
   font-family: 'Consolas', monospace;
 }
 .stat-label {
-  font-size: 9px; color: var(--text-dim);
-  margin-top: 3px;
+  font-size: 7px; color: var(--text-dim);
+  margin-top: 2px;
   text-transform: uppercase; letter-spacing: 1px;
 }
 
-/* 5h window */
+/* 5h window — compact */
 .rate-window {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
   backdrop-filter: blur(10px);
 }
 .rate-title {
-  font-size: 10px; color: var(--text-dim);
+  font-size: 9px; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 10px; text-align: center;
+  margin-bottom: 6px; text-align: center;
 }
 .rate-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Breakdown table */
+/* Breakdown table — compact */
 .breakdown {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 16px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
   backdrop-filter: blur(10px);
 }
 .breakdown-title {
-  font-size: 10px; color: var(--text-dim);
+  font-size: 9px; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 10px; text-align: center;
+  margin-bottom: 6px; text-align: center;
 }
 .breakdown table { width: 100%; border-collapse: collapse; font-size: 11px; }
 .breakdown th {
@@ -246,15 +247,16 @@ body::before {
 .breakdown tr.used td { color: var(--text-faint); }
 .breakdown .row-highlight { background: rgba(0,240,255,0.05); border-radius: 4px; }
 
-/* Prompt library */
+/* Prompt library — compact pills */
 .prompt-section {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex: 1;
 }
 .prompt-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .prompt-header h2 {
   font-size: 13px;
@@ -265,98 +267,114 @@ body::before {
 .prompt-search {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text);
-  padding: 6px 10px;
-  font-size: 12px;
-  width: 160px;
+  padding: 4px 8px;
+  font-size: 11px;
+  width: 140px;
   outline: none;
-  backdrop-filter: blur(10px);
 }
 .prompt-search:focus { border-color: var(--border-glow); }
 
 .prompt-filters {
   display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 .filter-btn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 9px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.filter-btn.active { background: var(--cyan); color: var(--void); border-color: var(--cyan); }
+.filter-btn:hover { border-color: var(--border-glow); }
+
+.prompt-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.prompt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 6px 3px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 10px;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+.prompt-pill:hover { border-color: var(--border-glow); transform: translateY(-1px); }
+.prompt-pill .name { font-weight: bold; color: var(--text); max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.prompt-pill .desc { color: var(--text-dim); font-size: 9px; display: none; }
+.prompt-pill .copy-btn {
+  background: rgba(59,130,246,0.2);
+  color: #60a5fa;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.prompt-pill .copy-btn:hover { background: rgba(59,130,246,0.4); }
+.prompt-pill .copy-btn.copied { background: var(--green); color: var(--void); }
+.prompt-pill .del-btn {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.prompt-pill .del-btn:hover { background: rgba(239,68,68,0.3); }
+
+/* Add prompt form */
+.add-prompt-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.add-prompt-row input, .add-prompt-row select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 4px 8px;
+  font-size: 10px;
+  outline: none;
+  flex: 1;
+  min-width: 60px;
+}
+.add-prompt-row select { flex: 0.5; }
+.add-prompt-row input:focus { border-color: var(--border-glow); }
+.add-btn {
+  background: rgba(0,240,255,0.15);
+  color: var(--cyan);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
   font-size: 10px;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 1px;
-  transition: all 0.3s;
 }
-.filter-btn.active {
-  background: var(--cyan);
-  color: var(--void);
-  border-color: var(--cyan);
-}
-.filter-btn:hover { border-color: var(--border-glow); }
-
-.prompt-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.prompt-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.3s;
-  backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-.prompt-card:hover {
-  border-color: var(--border-glow);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,240,255,0.1);
-}
-.prompt-card .tag {
-  font-size: 8px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: inline-block;
-  margin-bottom: 4px;
-}
-.tag-core { background: rgba(0,240,255,0.15); color: var(--cyan); }
-.tag-opus { background: rgba(168,85,247,0.15); color: #a855f7; }
-.tag-sonnet { background: rgba(59,130,246,0.15); color: #3b82f6; }
-.tag-fable { background: rgba(251,146,60,0.15); color: #fb923c; }
-.tag-haiku { background: rgba(34,197,94,0.15); color: #22c55e; }
-.tag-deepseek { background: rgba(20,184,166,0.15); color: #14b8a6; }
-.prompt-card .name {
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--text);
-  margin-bottom: 2px;
-}
-.prompt-card .desc {
-  font-size: 9px;
-  color: var(--text-dim);
-  line-height: 1.3;
-}
-.prompt-card .copy-hint {
-  font-size: 8px;
-  color: var(--text-faint);
-  margin-top: 4px;
-  text-align: right;
-}
-.prompt-card.copied {
-  border-color: var(--green);
-  background: var(--green-dim);
-}
+.add-btn:hover { background: rgba(0,240,255,0.25); }
 
 /* Settings drawer */
 .settings-overlay {
@@ -464,10 +482,29 @@ body::before {
 
 .status { text-align: center; font-size: 10px; color: var(--text-faint); margin-top: 12px; }
 
-/* Responsive */
+/* Responsive — tablet */
+@media (max-width: 768px) {
+  .prompt-grid { grid-template-columns: 1fr 1fr; }
+  .daily-pct { font-size: 56px; }
+}
+
+/* Responsive — phone */
 @media (max-width: 480px) {
+  .container { padding: 12px; }
+  .prompt-grid { grid-template-columns: 1fr 1fr; }
+  .daily-pct { font-size: 48px; }
+  .stats { flex-wrap: wrap; }
+  .stat { min-width: 45%; }
+  .rate-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .prompt-search { width: 120px; }
+  .prompt-card .desc { display: none; }
+  .breakdown table { font-size: 10px; }
+}
+
+/* Responsive — very narrow */
+@media (max-width: 360px) {
   .prompt-grid { grid-template-columns: 1fr; }
-  .daily-pct { font-size: 64px; }
+  .daily-pct { font-size: 40px; }
 }
 </style>
 </head>
@@ -519,15 +556,6 @@ body::before {
     </div>
   </div>
 
-  <!-- Weekly Breakdown -->
-  <div class="breakdown">
-    <div class="breakdown-title">Weekly Budget Breakdown</div>
-    <table id="breakdownTable">
-      <thead><tr><th>Day</th><th>Allowed</th><th>Tokens</th><th>Used</th></tr></thead>
-      <tbody id="breakdownBody"></tbody>
-    </table>
-  </div>
-
   <!-- Prompt Template Library -->
   <div class="prompt-section">
     <div class="prompt-header">
@@ -536,14 +564,32 @@ body::before {
     </div>
     <div class="prompt-filters" id="promptFilters">
       <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="core">Core</button>
+      <button class="filter-btn" data-filter="master">Master</button>
       <button class="filter-btn" data-filter="opus">Opus</button>
       <button class="filter-btn" data-filter="sonnet">Sonnet</button>
       <button class="filter-btn" data-filter="fable">Fable</button>
       <button class="filter-btn" data-filter="haiku">Haiku</button>
       <button class="filter-btn" data-filter="deepseek">DeepSeek</button>
+      <button class="filter-btn" data-filter="media">Media</button>
     </div>
     <div class="prompt-grid" id="promptGrid"></div>
+    <!-- Add custom prompt -->
+    <div class="add-prompt-row">
+      <input id="addName" type="text" placeholder="Prompt name..." style="flex:2" />
+      <input id="addModel" type="text" placeholder="Model (optional)" style="flex:1" />
+      <select id="addTier"><option value="custom">Custom</option><option value="master">Master</option><option value="opus">Opus</option><option value="sonnet">Sonnet</option><option value="fable">Fable</option><option value="haiku">Haiku</option><option value="deepseek">DeepSeek</option><option value="media">Media</option></select>
+      <input id="addBody" type="text" placeholder="Prompt text..." style="flex:3" />
+      <button class="add-btn" onclick="addCustomPrompt()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- Weekly Breakdown — moved to bottom -->
+  <div class="breakdown">
+    <div class="breakdown-title">Weekly Budget Breakdown</div>
+    <table id="breakdownTable">
+      <thead><tr><th>Day</th><th>Allowed</th><th>Tokens</th><th>Used</th></tr></thead>
+      <tbody id="breakdownBody"></tbody>
+    </table>
   </div>
 
   <div class="status" id="status">Loading...</div>
@@ -645,7 +691,7 @@ function animateNumber(el, from, to, duration) {
   requestAnimationFrame(step);
 }
 
-// Prompt library
+// Prompt library — compact pills
 let allPrompts = [];
 let activeFilter = 'all';
 
@@ -653,6 +699,9 @@ async function loadPrompts() {
   try {
     const res = await fetch('prompts.json');
     allPrompts = await res.json();
+    // Also load custom prompts from localStorage
+    const custom = JSON.parse(localStorage.getItem('customPrompts') || '[]');
+    allPrompts = [...allPrompts, ...custom];
     renderPrompts();
   } catch(e) {
     document.getElementById('promptGrid').innerHTML = '<div style="color:var(--text-faint);font-size:11px">prompts.json not found</div>';
@@ -669,26 +718,62 @@ function renderPrompts() {
     return true;
   });
   for (const p of filtered) {
-    const card = document.createElement('div');
-    card.className = 'prompt-card';
-    card.innerHTML = '<span class="tag tag-'+p.tier+'">'+p.tier+'</span>'+
-      '<div class="name">'+p.name+'</div>'+
-      '<div class="desc">'+p.desc+'</div>'+
-      '<div class="copy-hint">click to copy</div>';
-    card.onclick = () => copyPrompt(p, card);
-    grid.appendChild(card);
+    const pill = document.createElement('span');
+    pill.className = 'prompt-pill';
+    pill.title = p.title + '\n\n' + p.desc;
+    pill.innerHTML = '<span class="name">'+p.name+'</span>'+
+      '<button class="copy-btn" title="Copy '+p.name+' to clipboard">Copy</button>'+
+      '<button class="del-btn" title="Delete '+p.name+'">×</button>';
+    
+    // Copy button
+    pill.querySelector('.copy-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(p.body).then(() => {
+          const btn = pill.querySelector('.copy-btn');
+          btn.textContent = 'Copied';
+          btn.classList.add('copied');
+          showCopyToast();
+          setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+        });
+      }
+    };
+    
+    // Delete button
+    pill.querySelector('.del-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('Delete prompt "'+p.name+'"? This only removes custom prompts.')) {
+        allPrompts = allPrompts.filter(x => x.id !== p.id);
+        const custom = JSON.parse(localStorage.getItem('customPrompts') || '[]').filter(x => x.id !== p.id);
+        localStorage.setItem('customPrompts', JSON.stringify(custom));
+        renderPrompts();
+      }
+    };
+    
+    grid.appendChild(pill);
   }
 }
 
-function copyPrompt(prompt, card) {
-  const body = prompt.body;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(body).then(() => {
-      card.classList.add('copied');
-      showCopyToast();
-      setTimeout(() => card.classList.remove('copied'), 1000);
-    });
-  }
+function addCustomPrompt() {
+  const name = document.getElementById('addName').value.trim();
+  const model = document.getElementById('addModel').value.trim() || 'custom';
+  const tier = document.getElementById('addTier').value;
+  if (!name) return;
+
+  const id = 'custom.' + name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '.' + Date.now().toString(36);
+  const body = document.getElementById('addBody').value.trim() || name;
+
+  const p = { id: id, name: name, title: name, desc: 'Custom prompt for ' + model, tier: tier, model: model, body: body };
+  
+  allPrompts.push(p);
+  const custom = JSON.parse(localStorage.getItem('customPrompts') || '[]');
+  custom.push(p);
+  localStorage.setItem('customPrompts', JSON.stringify(custom));
+
+  document.getElementById('addName').value = '';
+  document.getElementById('addModel').value = '';
+  document.getElementById('addBody').value = '';
+  renderPrompts();
 }
 
 function showCopyToast() {
@@ -762,12 +847,17 @@ async function fetchUsage() {
     const dailyPct = d.daily_pct || 0;
     const weeklyPct = d.usage_pct || 0;
     const color = getColor(dailyPct);
+    const rank = (d.hourly_tokens || 0) > 0 ? Math.round(d.hourly_tokens || 0) : 0;
+    const tbudget = d.hourly_tokens || 0;
+    const weeklyCap = d.weekly_cap || 50000000;
 
-    // Animated counter
-    animateNumber(document.getElementById('dailyPct'), lastDailyPct, dailyPct, 800);
-    lastDailyPct = dailyPct;
-    document.getElementById('dailyPct').className = 'daily-pct '+color;
-    document.getElementById('dailyLabel').textContent = 'Day '+d.day_index+'/7 — budget '+Math.round(d.threshold_pct)+'%';
+    // Big number: tokens used today / remaining budget for today
+    const todayTokens = d.today_tokens || 0;
+    const remainingBudget = d.remaining_budget || 0;
+    const el = document.getElementById('dailyPct');
+    el.textContent = formatTokens(todayTokens) + ' / ' + formatTokens(remainingBudget);
+    el.className = 'daily-pct '+color;
+    document.getElementById('dailyLabel').textContent = 'today used / remaining (Day '+d.day_index+'/7)';
 
     setBar('dailyBar', dailyPct);
     setBar('weeklyBar', weeklyPct);

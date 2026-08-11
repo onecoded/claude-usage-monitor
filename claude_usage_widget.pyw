@@ -86,7 +86,16 @@ def get_usage(config):
 
     total_tokens = total_in + total_out
     usage_pct = (total_tokens / weekly_cap * 100) if weekly_cap > 0 else 0
-    daily_pct = (usage_pct / threshold_pct * 100) if threshold_pct > 0 else 0
+
+    # NEW daily pct: today's tokens / remaining budget available today
+    cumulative_threshold = int(weekly_cap * day_idx / divisor)
+    # Count today's tokens from the already-parsed data
+    today_in = sum(line_data.get('in', 0) for line_data in today_lines) if today_lines else 0
+    today_out = sum(line_data.get('out', 0) for line_data in today_lines) if today_lines else 0
+    today_tokens = today_in + today_out
+    prior_tokens = total_tokens - today_tokens
+    remaining_budget = max(0, cumulative_threshold - prior_tokens)
+    daily_pct = (today_tokens / remaining_budget * 100) if remaining_budget > 0 else (999 if today_tokens > 0 else 0)
 
     # Tokens consumed in the last hour
     one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
